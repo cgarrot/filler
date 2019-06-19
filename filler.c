@@ -6,31 +6,12 @@
 /*   By: cgarrot <marvin@le-101.fr>                 +:+   +:    +:    +:+     */
 /*                                                 #+#   #+    #+    #+#      */
 /*   Created: 2019/06/19 14:00:11 by cgarrot      #+#   ##    ##    #+#       */
-/*   Updated: 2019/06/19 16:39:40 by cgarrot     ###    #+. /#+    ###.fr     */
+/*   Updated: 2019/06/19 21:51:59 by cgarrot     ###    #+. /#+    ###.fr     */
 /*                                                         /                  */
 /*                                                        /                   */
 /* ************************************************************************** */
 
 #include "filler.h"
-#include "libft/includes/ft_printf.h"
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <stdio.h>
-
-int		ft_atoi_2(char *str, t_parse_info *inf)
-{
-	int		nbr;
-
-	nbr = 0;
-	while (str[inf->tmp] != '9' && str[inf->tmp] != '1' && str[inf->tmp] != '2'
-			&& str[inf->tmp] != '3' && str[inf->tmp] != '4' && str[inf->tmp] != '5'
-			&& str[inf->tmp] != '6' && str[inf->tmp] != '7' && str[inf->tmp] != '8')
-		inf->tmp++;
-	while (str[inf->tmp] >= '0' && str[inf->tmp] <= '9')
-		nbr = nbr * 10 + str[inf->tmp++] - '0';
-	return (nbr);
-}
 
 void	printf_info(int fd, t_parse_info inf)
 {
@@ -55,10 +36,6 @@ void	init(t_parse_info *inf)
 	inf->piece_hori = 1;
 	inf->piece_verti = 1;
 	inf->tmp = 0;
-	inf->c1 = 0;
-	inf->c2 = 0;
-	inf->c3 = 0;
-	inf->c4 = 0;
 }
 
 void	algool_test(int fd, t_parse_info *inf)
@@ -75,131 +52,47 @@ void	algool_test(int fd, t_parse_info *inf)
 	}
 }
 
-void	hori_or_verti(int fd, t_parse_info *inf)
+void	aff_map(int fd, t_parse_info *inf)
 {
-	int		x;
-	int		y;
-	int		k;
-	int		i;
-	int		tmp;
-
-	k = 0;
-	i = 0;
-	while (i < inf->piece_y)
-	{
-		x = 0;
-		while (k < inf->piece_x * (i + 1))
-		{
-			if (inf->piece_str[k] == '*')
-				x++;
-			k++;
-		}
-		if (x > inf->piece_hori)
-			inf->piece_hori = x;
-		//dprintf(fd,"x : [%d]\n", x);
-		//dprintf(fd,"k : [%d]\n", k);
-		i++;
-	}
-	k = 0;
-	i = 0;
-	tmp = -(inf->piece_x);
-	while (i < inf->piece_x)
-	{
-		y = 0;
-		k = inf->piece_x + tmp;
-		while (k < inf->piece_y * inf->piece_x + tmp)
-		{
-			if (inf->piece_str[k] == '*')
-				y++;
-			k += inf->piece_x;
-		}
-		if (y > inf->piece_verti)
-			inf->piece_verti = y;
-		//dprintf(fd,"x : [%d]\n", x);
-		//dprintf(fd,"k : [%d]\n", k);
-		i++;
-		tmp++;
-	}
-}
-
-void	get_coin(int fd, t_parse_info *inf)
-{
-	char	*line;
 	int		i;
 	int		j;
-	int		lower;
-	int		upper;
 
-	i = 0;
 	j = 0;
-	upper = 0;
-	inf->piece_str = malloc(sizeof(char) * (inf->piece_y * inf->piece_x + 1));
-	while (i < inf->piece_y)
+	while (j < inf->size_y)
 	{
-		get_next_line(0, &line);
-		inf->piece_str = ft_strcat(inf->piece_str, line);
-		//if ((size = ft_strlen(line) - ft_strlen(ft_strchr(line, '*'))))
-		if (ft_strchr(line, '*'))
+		i = 0;
+		while (i < inf->size_x)
 		{
-			if (j == 0)
-			{
-				lower = i;
-				j++;
-			}
-			if (i > upper)
-				upper = i;
-			dprintf(fd, "size * : [%d]\n", i);
+			dprintf(fd, "%d ", inf->tab[j][i]);
+			i++;
 		}
-		ft_strdel(&line);
-		i++;
+		dprintf(fd, "\n");
+		j++;
 	}
 }
 
-void	parse(int fd, t_parse_info *inf)
+void	set_map(int fd, t_parse_info *inf)
 {
-	char	*line;
-	char	*tmp;
 	int		i;
+	int		j;
 
-	i = 0;
-	init(inf);
-	get_next_line(0, &line);
-	if (line[10] == '1')
+	j = 0;
+	inf->tab = malloc((sizeof(int*) * inf->size_y));
+	while (j < inf->size_y)
 	{
-		inf->caract = 'O';
-		inf->enemy = 'X';
-	}
-	else
-	{
-		inf->caract = 'X';
-		inf->enemy = 'O';
-	}
-	ft_strdel(&line);
-	get_next_line(0, &line);
-	inf->size_y = ft_atoi_2(line, inf);
-	inf->size_x = ft_atoi_2(line, inf);
-	while (i != inf->size_y + 2)
-	{
-		ft_strdel(&line);
-		get_next_line(0, &line);
-		if ((tmp = ft_strchr(line, inf->caract)))
+		i = 0;
+		inf->tab[j] = malloc((sizeof(int) * inf->size_x));
+		ft_memset(inf->tab[i], 0, inf->size_x);
+		while (i < inf->size_x)
 		{
-			inf->start_x = ft_strlen(line) - ft_strlen(tmp) - 4;
-			inf->tmp = 0;
-			inf->start_y = ft_atoi_2(line, inf);
+			dprintf(fd, "%d ", inf->tab[j][i]);
+			i++;
 		}
-		if ((tmp = ft_strchr(line, inf->enemy)))
-		{
-			inf->enemy_x = ft_strlen(line) - ft_strlen(tmp) - 4;
-			inf->tmp = 0;
-			inf->enemy_y = ft_atoi_2(line, inf);
-		}
-		i++;
+		dprintf(fd, "\n");
+		j++;
 	}
-	inf->piece_y = ft_atoi_2(line, inf);
-	inf->piece_x = ft_atoi_2(line, inf);
-	get_coin(fd, inf);
-	hori_or_verti(fd, inf);
+	inf->tab[inf->start_y][inf->start_x] = 1;
+	inf->tab[inf->enemy_y][inf->enemy_x] = 1;
 }
 
 int		main(int ac, char **av)
@@ -209,7 +102,9 @@ int		main(int ac, char **av)
 
 	dprintf(fd, "-----------INFO---------\n");
 	parse(fd, &inf);
+	set_map(fd, &inf);
 	printf_info(fd, inf);
+	aff_map(fd, &inf);
 	//algool_test(fd, &inf);
 	return (0);
 }
