@@ -6,7 +6,7 @@
 /*   By: cgarrot <marvin@le-101.fr>                 +:+   +:    +:    +:+     */
 /*                                                 #+#   #+    #+    #+#      */
 /*   Created: 2018/10/07 08:46:05 by cgarrot      #+#   ##    ##    #+#       */
-/*   Updated: 2019/06/05 15:55:08 by cgarrot     ###    #+. /#+    ###.fr     */
+/*   Updated: 2019/06/18 11:52:29 by cgarrot     ###    #+. /#+    ###.fr     */
 /*                                                         /                  */
 /*                                                        /                   */
 /* ************************************************************************** */
@@ -97,5 +97,9 @@ char			*ft_hhtoa(char n);
 char			*ft_strjoinfree(char *s1, char *s2, char i);
 char			*ft_strsubfree(char *s1, size_t start, size_t len);
 char			*ft_ftoa(long double d, int p);
+
+int				get_next_line(const int fd, char **line);
+
+# define BUFF_SIZE 32
 
 #endif

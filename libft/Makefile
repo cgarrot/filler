@@ -6,7 +6,7 @@
 #    By: cgarrot <marvin@le-101.fr>                 +:+   +:    +:    +:+      #
 #                                                  #+#   #+    #+    #+#       #
 #    Created: 2018/10/10 19:59:22 by cgarrot      #+#   ##    ##    #+#        #
-#    Updated: 2019/06/06 16:41:24 by cgarrot     ###    #+. /#+    ###.fr      #
+#    Updated: 2019/06/10 10:52:04 by cgarrot     ###    #+. /#+    ###.fr      #
 #                                                          /                   #
 #                                                         /                    #
 # **************************************************************************** #
@@ -120,7 +120,6 @@ $(NAME): $(OBJ)
 	@ranlib $(NAME)
 
 object/%.o: src/%.c
-	@mkdir -p obj
 	@$(CC) $(FLAGS) -I $(HEADER) -o $@ -c $<
 
 clean:
