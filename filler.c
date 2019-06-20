@@ -6,7 +6,7 @@
 /*   By: cgarrot <marvin@le-101.fr>                 +:+   +:    +:    +:+     */
 /*                                                 #+#   #+    #+    #+#      */
 /*   Created: 2019/06/19 14:00:11 by cgarrot      #+#   ##    ##    #+#       */
-/*   Updated: 2019/06/19 21:51:59 by cgarrot     ###    #+. /#+    ###.fr     */
+/*   Updated: 2019/06/20 18:53:32 by cgarrot     ###    #+. /#+    ###.fr     */
 /*                                                         /                  */
 /*                                                        /                   */
 /* ************************************************************************** */
@@ -71,6 +71,58 @@ void	aff_map(int fd, t_parse_info *inf)
 	}
 }
 
+void	heatmap(int fd, t_parse_info *inf)
+{
+	int		i;
+	int		j;
+	int		k;
+	int		co_x;
+	int		co_y;
+	int		tmp;
+
+	tmp = inf->size_x;
+	if (inf->size_y > inf->size_x)
+		tmp = inf->size_y;
+	co_x = inf->enemy_x;
+	co_y = inf->enemy_y;
+	j = 0;
+	k = 0;
+	while (tmp)
+	{
+		j = 0;
+		while (j < inf->size_y)
+		{
+			i = 0;
+			while (i < inf->size_x)
+			{
+				if ((inf->tab[j][i] == k - 1) && (j - 1 >= 0 && i - 1 >= 0 && j + 1 < inf->size_y && i + 1 < inf->size_x))
+				{
+					if (inf->tab[j - 1][i - 1] == -2)
+						inf->tab[j - 1][i - 1] = k;
+					if (inf->tab[j - 1][i] == -2)
+						inf->tab[j - 1][i] = k;
+					if (inf->tab[j - 1][i + 1] == -2)
+						inf->tab[j - 1][i + 1] = k;
+					if (inf->tab[j][i - 1] == -2)
+						inf->tab[j][i - 1] = k;
+					if (inf->tab[j][i + 1] == -2)
+						inf->tab[j][i + 1] = k;
+					if (inf->tab[j + 1][i - 1] == -2)
+						inf->tab[j + 1][i - 1] = k;
+					if (inf->tab[j + 1][i] == -2)
+						inf->tab[j + 1][i] = k;
+					if (inf->tab[j + 1][i + 1] == -2)
+						inf->tab[j + 1][i + 1] = k;
+				}
+				i++;
+			}
+			j++;
+		}
+		k++;
+		tmp--;
+	}
+}
+
 void	set_map(int fd, t_parse_info *inf)
 {
 	int		i;
@@ -82,17 +134,18 @@ void	set_map(int fd, t_parse_info *inf)
 	{
 		i = 0;
 		inf->tab[j] = malloc((sizeof(int) * inf->size_x));
-		ft_memset(inf->tab[i], 0, inf->size_x);
+		//ft_memset(inf->tab[i], 0, inf->size_x);
 		while (i < inf->size_x)
 		{
-			dprintf(fd, "%d ", inf->tab[j][i]);
+			inf->tab[j][i] = -2;
+			//dprintf(fd, "%d ", inf->tab[j][i]);
 			i++;
 		}
-		dprintf(fd, "\n");
+		//dprintf(fd, "\n");
 		j++;
 	}
-	inf->tab[inf->start_y][inf->start_x] = 1;
-	inf->tab[inf->enemy_y][inf->enemy_x] = 1;
+	//inf->tab[inf->start_y][inf->start_x] = -1;
+	inf->tab[inf->enemy_y][inf->enemy_x] = -1;
 }
 
 int		main(int ac, char **av)
@@ -104,6 +157,7 @@ int		main(int ac, char **av)
 	parse(fd, &inf);
 	set_map(fd, &inf);
 	printf_info(fd, inf);
+	heatmap(fd, &inf);
 	aff_map(fd, &inf);
 	//algool_test(fd, &inf);
 	return (0);

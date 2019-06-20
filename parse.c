@@ -6,7 +6,7 @@
 /*   By: cgarrot <marvin@le-101.fr>                 +:+   +:    +:    +:+     */
 /*                                                 #+#   #+    #+    #+#      */
 /*   Created: 2019/06/19 21:15:59 by cgarrot      #+#   ##    ##    #+#       */
-/*   Updated: 2019/06/19 21:20:05 by cgarrot     ###    #+. /#+    ###.fr     */
+/*   Updated: 2019/06/20 13:45:12 by cgarrot     ###    #+. /#+    ###.fr     */
 /*                                                         /                  */
 /*                                                        /                   */
 /* ************************************************************************** */
@@ -21,13 +21,13 @@ void	size_piece_info(int fd, t_parse_info *inf)
 	count.i = 0;
 	count.j = 0;
 	count.upper = 0;
-	inf->piece_str = malloc(sizeof(char) * (inf->piece_y * inf->piece_x + 1));
-	inf->str = malloc(sizeof(char) * inf->piece_x + 1);
+	//inf->piece_str = (char*)malloc(sizeof(char) * (inf->piece_y * inf->piece_x + 1));
+	inf->str = (char*)malloc(sizeof(char) * (inf->piece_x + 1));
 	inf->str = ft_memset(inf->str, '0', inf->piece_x + 1);
 	while (count.i < inf->piece_y)
 	{
 		get_next_line(0, &line);
-		inf->piece_str = ft_strcat(inf->piece_str, line);
+		//inf->piece_str = ft_strcat(inf->piece_str, line);
 		if (ft_strchr(line, '*'))
 		{
 			count.k = 0;
@@ -49,7 +49,7 @@ void	size_piece_info(int fd, t_parse_info *inf)
 		ft_strdel(&line);
 		count.i++;
 	}
-	inf->str[inf->piece_x + 1] = '\0';
+	inf->str[inf->piece_x] = '\0';
 	dprintf(fd,"Horizontal str : [%s]\n", inf->str);
 	inf->piece_hori = count_caract(fd, inf->str, '1');
 	//ft_strdel(&inf->str);
