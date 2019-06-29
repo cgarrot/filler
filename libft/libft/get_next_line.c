@@ -6,7 +6,7 @@
 /*   By: cgarrot <marvin@le-101.fr>                 +:+   +:    +:    +:+     */
 /*                                                 #+#   #+    #+    #+#      */
 /*   Created: 2018/10/11 22:19:50 by cgarrot      #+#   ##    ##    #+#       */
-/*   Updated: 2019/06/18 11:53:44 by cgarrot     ###    #+. /#+    ###.fr     */
+/*   Updated: 2019/06/28 14:49:03 by cgarrot     ###    #+. /#+    ###.fr     */
 /*                                                         /                  */
 /*                                                        /                   */
 /* ************************************************************************** */
@@ -54,7 +54,7 @@ int		get_next_line(const int fd, char **line)
 		if (!(str[fd] = ft_strjoin(tmp, buff)))
 			return (-1);
 		if (ft_strlen(tmp))
-			free(tmp);
+			ft_strdel(&tmp);
 		if (ret < 0)
 			return (-1);
 	}
