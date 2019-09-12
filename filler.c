@@ -6,14 +6,14 @@
 /*   By: cgarrot <marvin@le-101.fr>                 +:+   +:    +:    +:+     */
 /*                                                 #+#   #+    #+    #+#      */
 /*   Created: 2019/06/19 14:00:11 by cgarrot      #+#   ##    ##    #+#       */
-/*   Updated: 2019/06/28 14:46:43 by cgarrot     ###    #+. /#+    ###.fr     */
+/*   Updated: 2019/09/12 21:43:22 by cgarrot     ###    #+. /#+    ###.fr     */
 /*                                                         /                  */
 /*                                                        /                   */
 /* ************************************************************************** */
 
 #include "filler.h"
 
-void	printf_info(int fd, t_parse_info inf)
+void	printf_info(int fd, t_parse_info inf, t_algo_info algo)
 {
 	dprintf(fd, "Caract : [%c]\n", inf.caract);
 	dprintf(fd, "Size y : [%u]\n", inf.size_y);
@@ -24,11 +24,13 @@ void	printf_info(int fd, t_parse_info inf)
 	dprintf(fd, "Enemy x : [%u]\n", inf.enemy_x);
 	dprintf(fd, "Piece y : [%u]\n", inf.piece_y);
 	dprintf(fd, "Piece x : [%u]\n", inf.piece_x);
-	//dprintf(fd, "[%d]---[%d]\n |     | ", inf.c1, inf.c2);
-	//dprintf(fd, "\n[%d]---[%d]\n", inf.c3, inf.c4);
-	dprintf(fd, "Piece : [%s]\n", inf.piece_str);
+	//dprintf(fd, "Piece : [%s]\n", inf.p_str);
+	//dprintf(fd, "Piece 2: [%s]\n", inf.piece_str);
 	dprintf(fd, "Size Piece Vertical : [%u]\n", inf.piece_verti);
 	dprintf(fd, "Size Piece Horizontal : [%u]\n", inf.piece_hori);
+	dprintf(fd, "Res : [%d]\n", inf.res);
+	dprintf(fd, "Min res : [%d]\n", inf.tmp2);
+
 }
 
 void	init(t_parse_info *inf)
@@ -38,127 +40,256 @@ void	init(t_parse_info *inf)
 	inf->tmp = 0;
 }
 
-void	algool_test(int fd, t_parse_info *inf)
+void	init_calcul(t_parse_info *inf, t_count *c)
 {
-	char	*line;
-	int		i;
+	c->k = -1;
+	c->j_tmp = 0;
+	c->i_tmp = c->i;
+	inf->res = 0;
+	c->point = 0;
+}
 
-	i = 0;
-	while (get_next_line(0, &line) == 1)
+void	calcul_coor_piece(int fd, t_parse_info *inf, t_algo_info *algo, t_count *c)
+{
+	int		test;
+
+	while (++c->j < (inf->size_y - inf->piece_y + 1))
 	{
-		dprintf(fd, "Line %d : [%s]\n", i, line);
-		ft_strdel(&line);
-		i++;
+		c->i = -1;
+		while (++c->i < (inf->size_x - inf->piece_x + 1))
+		{
+			test = 0;
+			init_calcul(inf, c);
+			while (inf->p_str[++(c->k)])
+			{
+
+				if (inf->tab[c->j + c->j_tmp][c->i_tmp] == 2 && inf->p_str[c->k] == '*')
+					test++;
+
+				//dprintf(fd, "total = %d\n", c->j + c->j_tmp);
+				//dprintf(fd, "c->i_tmp = %d\n", c->i_tmp);
+				if (inf->tab[c->j + c->j_tmp][c->i_tmp] == 1 && inf->p_str[c->k] == '*')
+					c->point++;
+				if (inf->p_str[c->k] == '*' && c->point <= 1)
+					inf->res += inf->map[c->j + c->j_tmp][c->i_tmp];
+				if (inf->p_str[c->k] == 'R')
+					c->i_tmp = c->i;
+				if (inf->p_str[c->k] == 'R')
+					c->j_tmp++;
+				else if (c->i_tmp < inf->size_x - 1)
+					c->i_tmp++;
+			}
+			if ((inf->res < inf->tmp2) && c->point == 1 && test == 0)
+			{
+				inf->tmp2 = inf->res;
+				algo->coor_y = c->j;
+				algo->coor_x = c->i;
+				//dprintf(fd, "Piece place x: [%u]\n", algo->coor_x);
+				//dprintf(fd, "Piece place y: [%u]\n", algo->coor_y);
+			}
+		}
 	}
 }
 
-void	aff_map(int fd, t_parse_info *inf)
+void	test_piece(int fd, t_parse_info *inf, t_algo_info *algo)
 {
-	int		i;
-	int		j;
+	t_count			c;
 
-	j = 0;
-	while (j < inf->size_y)
+	c.j = -1;
+	inf->res = 0;
+	inf->tmp2 = 2147483646;
+	calcul_coor_piece(fd, inf, algo, &c);
+	c.k = -1;
+	c.i = 0;
+	c.j = 0;
+	while (inf->p_str[++c.k])
 	{
-		i = 0;
-		while (i < inf->size_x)
+		if (inf->p_str[c.k] == '*')
+			inf->tab[algo->coor_y + c.j][algo->coor_x + c.i] = 1;
+		if (inf->p_str[c.k] == 'R')
 		{
-			dprintf(fd, "%d ", inf->tab[j][i]);
-			i++;
+			c.i = -1;
+			c.j++;
 		}
-		dprintf(fd, "\n");
-		j++;
+		c.i++;
 	}
+}
+
+void	set_heatmap(t_parse_info *inf, t_count *c)
+{
+	if (inf->map[c->j - 1][c->i - 1] == -2)
+		inf->map[c->j - 1][c->i - 1] = c->k;
+	if (inf->map[c->j - 1][c->i] == -2)
+		inf->map[c->j - 1][c->i] = c->k;
+	if (inf->map[c->j - 1][c->i + 1] == -2)
+		inf->map[c->j - 1][c->i + 1] = c->k;
+	if (inf->map[c->j][c->i - 1] == -2)
+		inf->map[c->j][c->i - 1] = c->k;
+	if (inf->map[c->j][c->i + 1] == -2)
+		inf->map[c->j][c->i + 1] = c->k;
+	if (inf->map[c->j + 1][c->i - 1] == -2)
+		inf->map[c->j + 1][c->i - 1] = c->k;
+	if (inf->map[c->j + 1][c->i] == -2)
+		inf->map[c->j + 1][c->i] = c->k;
+	if (inf->map[c->j + 1][c->i + 1] == -2)
+		inf->map[c->j + 1][c->i + 1] = c->k;
 }
 
 void	heatmap(int fd, t_parse_info *inf)
 {
-	int		i;
-	int		j;
-	int		k;
-	int		co_x;
-	int		co_y;
-	int		tmp;
+	t_count		c;
 
-	tmp = inf->size_x;
+	c.tmp = inf->size_x;
 	if (inf->size_y > inf->size_x)
-		tmp = inf->size_y;
-	co_x = inf->enemy_x;
-	co_y = inf->enemy_y;
-	j = 0;
-	k = 0;
-	while (tmp)
+		c.tmp = inf->size_y + 1;
+	c.k = 0;
+	while (--c.tmp)
 	{
-		j = 0;
-		while (j < inf->size_y)
+		c.j = -1;
+		while (++c.j < inf->size_y)
 		{
-			i = 0;
-			while (i < inf->size_x)
-			{
-				if ((inf->tab[j][i] == k - 1) && (j - 1 >= 0 && i - 1 >= 0 && j + 1 < inf->size_y && i + 1 < inf->size_x))
-				{
-					if (inf->tab[j - 1][i - 1] == -2)
-						inf->tab[j - 1][i - 1] = k;
-					if (inf->tab[j - 1][i] == -2)
-						inf->tab[j - 1][i] = k;
-					if (inf->tab[j - 1][i + 1] == -2)
-						inf->tab[j - 1][i + 1] = k;
-					if (inf->tab[j][i - 1] == -2)
-						inf->tab[j][i - 1] = k;
-					if (inf->tab[j][i + 1] == -2)
-						inf->tab[j][i + 1] = k;
-					if (inf->tab[j + 1][i - 1] == -2)
-						inf->tab[j + 1][i - 1] = k;
-					if (inf->tab[j + 1][i] == -2)
-						inf->tab[j + 1][i] = k;
-					if (inf->tab[j + 1][i + 1] == -2)
-						inf->tab[j + 1][i + 1] = k;
-				}
-				i++;
-			}
-			j++;
+			c.i = -1;
+			while (++c.i < inf->size_x)
+				if (inf->map[c.j][c.i] == c.k - 1 && (c.j - 1 >= 0 && c.i - 1 >= 0 && c.j + 1 < inf->size_y && c.i + 1 < inf->size_x))
+					set_heatmap(inf, &c);
 		}
-		k++;
-		tmp--;
+		c.k++;
 	}
 }
 
-void	set_map(int fd, t_parse_info *inf)
+void	clear_heatmap(int fd, t_parse_info *inf)
 {
+	int i;
+
+	i = 0;
+	while (i < inf->size_y)
+	{
+		free(inf->map[i]);
+		//free(inf->map[i]);
+		//ft_memset(inf->tab[i], -2, inf->size_x);
+		i++;
+	}
+	//free(inf->map);
+	free(inf->map);
+}
+
+int		parse_piece(int fd, t_parse_info *inf)
+{
+	char	*line;
+	char	**split;
 	int		i;
 	int		j;
-
-	j = 0;
-	inf->tab = malloc((sizeof(int*) * inf->size_y));
-	while (j < inf->size_y)
+	
+	i = 0;
+	line = NULL;
+	while (i < inf->size_y + 2)
 	{
-		i = 0;
-		inf->tab[j] = malloc((sizeof(int) * inf->size_x));
-		//ft_memset(inf->tab[i], 0, inf->size_x);
-		while (i < inf->size_x)
+		//dprintf(fd, "---------------[%s]\n", inf->p_str);
+		ft_strdel(&line);
+		if ((get_next_line(0, &line) <= 0))
 		{
-			inf->tab[j][i] = -2;
-			//dprintf(fd, "%d ", inf->tab[j][i]);
-			i++;
+			return (0);
 		}
-		//dprintf(fd, "\n");
-		j++;
+		//dprintf(fd, "2 LINE LINE [%s]\n", line);
+		j = 0;
+		while (j < inf->size_x + 4)
+		{
+			dprintf(fd, "%c", line[j]);
+			if (line[j] == inf->enemy)
+			{
+				inf->tmp_x = j - 4;
+				inf->tmp_y = i - 2;
+				inf->map[inf->tmp_y][inf->tmp_x] = -1;
+				inf->tab[inf->tmp_y][inf->tmp_x] = 2;
+			}
+			j++;
+		}
+		dprintf(fd, "\n");
+		i++;
 	}
-	//inf->tab[inf->start_y][inf->start_x] = -1;
-	inf->tab[inf->enemy_y][inf->enemy_x] = -1;
+	ft_strdel(&line);
+	get_next_line(0, &line);
+	//inf->tmp = 0;
+	split = ft_strsplit(line, ' ');
+	inf->piece_y = atoi(split[1]);
+	inf->piece_x = atoi(split[2]);
+	ft_strdel(&line);
+	size_piece_info(fd, inf);
+	return (1);
+}
+
+void	test_gnl(int fd, t_parse_info *inf)
+{
+	char *line;
+	ft_strdel(&line);
+	get_next_line(0, &line);
+		dprintf(fd, "LINE LINE [%s]\n", line);
+		ft_strdel(&line);
+}
+
+void	free_zob(int fd, t_parse_info *inf)
+{
+	if (inf->str)
+		ft_strdel(&inf->str);
+	if (inf->p_str)
+		ft_strdel(&inf->p_str);
 }
 
 int		main(int ac, char **av)
 {
-	t_parse_info inf;
+	t_parse_info		inf;
+	t_algo_info			algo;
+	char		*line;
 	int		fd = open("/Users/cgarrot/filler/info.log", O_WRONLY | O_APPEND);
-
+	
+	
 	dprintf(fd, "-----------INFO---------\n");
-	parse(fd, &inf);
-	set_map(fd, &inf);
-	printf_info(fd, inf);
-	heatmap(fd, &inf);
-	aff_map(fd, &inf);
-	//algool_test(fd, &inf);
+	int		first = 0;
+	int i = 0;
+	while (1)
+	{
+		if (first == 0)
+		{
+			parse(fd, &inf);
+			set_map(fd, &inf);
+			set_tab(fd, &inf);
+			heatmap(fd, &inf);
+			//printf_info(fd, inf, algo);
+		}
+		if (first == 1)
+		{
+			clear_heatmap(fd, &inf);
+			set_map(fd, &inf);
+			//aff_map(fd, &inf, inf.tab);
+			if (parse_piece(fd, &inf) == 0)
+				return (0);
+			heatmap(fd, &inf);
+			aff_map(fd, &inf, inf.map);
+			//printf_info(fd, inf, algo);
+		}
+		first = 1;
+
+
+		test_piece(fd, &inf, &algo);
+		free_zob(fd, &inf);
+
+
+
+		aff_map(fd, &inf, inf.tab);
+		dprintf(fd, "\n");
+		//aff_map(fd, &inf, inf.map);
+
+
+		//dprintf(fd, "Co Piece Y & X: [%u] [%u]\n", algo.coor_y, algo.coor_x);
+		ft_putnbr(algo.coor_y);
+		ft_putchar(' ');
+		ft_putnbr(algo.coor_x);
+		ft_putchar('\n');
+		//printf("%d %d\n", algo.coor_y, algo.coor_x);
+
+		//printf_info(fd, inf, algo);
+
+		//test_gnl(fd, &inf);
+	}
 	return (0);
 }

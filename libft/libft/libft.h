@@ -6,7 +6,7 @@
 /*   By: cgarrot <marvin@le-101.fr>                 +:+   +:    +:    +:+     */
 /*                                                 #+#   #+    #+    #+#      */
 /*   Created: 2018/10/07 08:46:05 by cgarrot      #+#   ##    ##    #+#       */
-/*   Updated: 2019/06/18 11:52:29 by cgarrot     ###    #+. /#+    ###.fr     */
+/*   Updated: 2019/09/12 14:57:00 by cgarrot     ###    #+. /#+    ###.fr     */
 /*                                                         /                  */
 /*                                                        /                   */
 /* ************************************************************************** */
@@ -100,6 +100,15 @@ char			*ft_ftoa(long double d, int p);
 
 int				get_next_line(const int fd, char **line);
 
-# define BUFF_SIZE 32
+# define BUFF_SIZE 2
+# define FDMAX 126
+
+typedef struct	s_gnl
+{
+	char	*str;
+	int		fd;
+}				t_gnl;
+
+# define MALLCHECK(x) if (!x) return (-1);
 
 #endif

@@ -5,15 +5,15 @@
 /*                                                 +:+:+   +:    +:  +:+:+    */
 /*   By: cgarrot <marvin@le-101.fr>                 +:+   +:    +:    +:+     */
 /*                                                 #+#   #+    #+    #+#      */
-/*   Created: 2019/06/19 21:15:59 by cgarrot      #+#   ##    ##    #+#       */
-/*   Updated: 2019/06/20 13:45:12 by cgarrot     ###    #+. /#+    ###.fr     */
+/*   Created: 2019/07/07 05:21:02 by cgarrot      #+#   ##    ##    #+#       */
+/*   Updated: 2019/09/12 19:46:29 by cgarrot     ###    #+. /#+    ###.fr     */
 /*                                                         /                  */
 /*                                                        /                   */
 /* ************************************************************************** */
 
 #include "filler.h"
 
-void	size_piece_info(int fd, t_parse_info *inf)
+int		size_piece_info(int fd, t_parse_info *inf)
 {
 	char		*line;
 	t_count		count;
@@ -21,13 +21,22 @@ void	size_piece_info(int fd, t_parse_info *inf)
 	count.i = 0;
 	count.j = 0;
 	count.upper = 0;
-	//inf->piece_str = (char*)malloc(sizeof(char) * (inf->piece_y * inf->piece_x + 1));
-	inf->str = (char*)malloc(sizeof(char) * (inf->piece_x + 1));
-	inf->str = ft_memset(inf->str, '0', inf->piece_x + 1);
+	
+//	dprintf(fd, "---------------[%s]\n", inf->p_str);
+//	dprintf(fd, "+++++++++++++++[%s]\n", inf->str);
+	if (!(inf->str = (char*)malloc(sizeof(char) * (inf->piece_x + 1))))
+		return (0);
+	if (!(inf->p_str = (char*)malloc(sizeof(char) * ((inf->piece_y * (inf->piece_x + 1))))))
+		return (0);
+	inf->str = ft_memset(inf->str, '0', inf->piece_x);
+	//dprintf(fd, "BUGGGGGG LINE [%s]\n", line);
 	while (count.i < inf->piece_y)
 	{
 		get_next_line(0, &line);
-		//inf->piece_str = ft_strcat(inf->piece_str, line);
+		//dprintf(fd, "4 LINE LINE [%s]\n", line);
+		inf->p_str = ft_strcat(inf->p_str, line);
+		if ((inf->piece_y - 1) != count.i)
+			inf->p_str = ft_strcat(inf->p_str, "R");
 		if (ft_strchr(line, '*'))
 		{
 			count.k = 0;
@@ -49,14 +58,16 @@ void	size_piece_info(int fd, t_parse_info *inf)
 		ft_strdel(&line);
 		count.i++;
 	}
+	//inf->p_str = ft_strcat(inf->p_str, "\0");
+	inf->p_str[inf->piece_y * (inf->piece_x + 1) - 1] = '\0';
 	inf->str[inf->piece_x] = '\0';
-	dprintf(fd,"Horizontal str : [%s]\n", inf->str);
 	inf->piece_hori = count_caract(fd, inf->str, '1');
-	//ft_strdel(&inf->str);
+	return (1);
 }
 
 void	parse(int fd, t_parse_info *inf)
 {
+	char	**split;
 	char	*line;
 	char	*tmp;
 	int		i;
@@ -64,6 +75,7 @@ void	parse(int fd, t_parse_info *inf)
 	i = 0;
 	init(inf);
 	get_next_line(0, &line);
+	//dprintf(fd, "1 LINE LINE [%s]\n", line);
 	if (line[10] == '1')
 	{
 		inf->caract = 'O';
@@ -76,75 +88,39 @@ void	parse(int fd, t_parse_info *inf)
 	}
 	ft_strdel(&line);
 	get_next_line(0, &line);
+	//dprintf(fd, "2 LINE LINE [%s]\n", line);
 	inf->size_y = ft_atoi_2(line, inf);
 	inf->size_x = ft_atoi_2(line, inf);
-	while (i != inf->size_y + 2)
+	while (i < inf->size_y + 2)
 	{
 		ft_strdel(&line);
 		get_next_line(0, &line);
-		if ((tmp = ft_strchr(line, inf->caract)))
+		//dprintf(fd, "3 LINE LINE [%s]\n", line);
+		if ((tmp = ft_strchr(line, inf->caract)) && inf->first == 0)
 		{
 			inf->start_x = ft_strlen(line) - ft_strlen(tmp) - 4;
 			inf->tmp = 0;
 			inf->start_y = ft_atoi_2(line, inf);
 		}
-		if ((tmp = ft_strchr(line, inf->enemy)))
+		if ((tmp = ft_strchr(line, inf->enemy)) && inf->first == 0)
 		{
 			inf->enemy_x = ft_strlen(line) - ft_strlen(tmp) - 4;
 			inf->tmp = 0;
 			inf->enemy_y = ft_atoi_2(line, inf);
 		}
+		if ((tmp = ft_strchr(line, inf->enemy)) && inf->first == 1)
+		{
+			inf->tmp_x = ft_strlen(line) - ft_strlen(tmp) - 4;
+			inf->tmp = 0;
+			inf->tmp_y = ft_atoi_2(line, inf);
+			inf->map[inf->tmp_y][inf->tmp_x] = -1;
+			inf->tab[inf->tmp_y][inf->tmp_x] = 2;
+		}
 		i++;
 	}
-	inf->piece_y = ft_atoi_2(line, inf);
-	inf->piece_x = ft_atoi_2(line, inf);
+	split = ft_strsplit(line, ' ');
+	inf->piece_y = atoi(split[1]);
+	inf->piece_x = atoi(split[2]);
+	ft_strdel(&line);
 	size_piece_info(fd, inf);
-	//hori_or_verti(fd, inf);
 }
-
-/*void	hori_or_verti(int fd, t_parse_info *inf)
-{
-	int		x;
-	int		y;
-	int		k;
-	int		i;
-	int		tmp;
-
-	k = 0;
-	i = 0;
-	while (i < inf->piece_y)
-	{
-		x = 0;
-		while (k < inf->piece_x * (i + 1))
-		{
-			if (inf->piece_str[k] == '*')
-				x++;
-			k++;
-		}
-		if (x > inf->piece_hori)
-			inf->piece_hori = x;
-		//dprintf(fd,"x : [%d]\n", x);
-		//dprintf(fd,"k : [%d]\n", k);
-		i++;
-	}
-	k = 0;
-	i = 0;
-	tmp = -(inf->piece_x);
-	while (i < inf->piece_x)
-	{
-		y = 0;
-		k = inf->piece_x + tmp;
-		while (k < inf->piece_y * inf->piece_x + tmp)
-		{
-			if (inf->piece_str[k] == '*')
-				y++;
-			k += inf->piece_x;
-		}
-		if (y > inf->piece_verti)
-			inf->piece_verti = y;
-		//dprintf(fd,"x : [%d]\n", x);
-		//dprintf(fd,"k : [%d]\n", k);
-		i++;
-		tmp++;
-	}
-}*/
