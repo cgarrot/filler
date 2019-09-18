@@ -6,110 +6,70 @@
 /*   By: cgarrot <marvin@le-101.fr>                 +:+   +:    +:    +:+     */
 /*                                                 #+#   #+    #+    #+#      */
 /*   Created: 2018/10/11 22:19:50 by cgarrot      #+#   ##    ##    #+#       */
-/*   Updated: 2019/09/12 22:28:26 by cgarrot     ###    #+. /#+    ###.fr     */
+/*   Updated: 2019/09/17 17:06:41 by cgarrot     ###    #+. /#+    ###.fr     */
 /*                                                         /                  */
 /*                                                        /                   */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-static char		*strjoinfree(char **s1, char *s2)
-{
-	char	*str;
-
-	if (!(str = malloc(ft_strlen(*s1) + ft_strlen(s2) + 1)))
-		return (NULL);
-	str[0] = '\0';
-	str = ft_strcat(str, *s1);
-	str = ft_strcat(str, s2);
-	ft_strdel(s1);
-	return (str);
-}
-
-static char		*get_fd(int fd, t_gnl *tab)
+int			ft_index(const char *s, int c)
 {
 	int		i;
 
 	i = 0;
-	while (tab[i].fd != -2)
+	while (s[i] != '\0')
 	{
-		if (fd == tab[i].fd)
-			return (tab[i].str);
+		if ((int)s[i] == c)
+			return (i);
 		i++;
 	}
-	tab[i].fd = fd;
-	tab[i].str = ft_strdup("");
-	return (tab[i].str);
+	if ((int)s[i] == c)
+		return (i);
+	return (-1);
 }
 
-static int		ft_ret(char **str, int ret, char **line)
+static int	cut_line(char **line, char *tab[10240], int fd, int x)
 {
 	char	*tmp;
-	int		i;
 
-	i = 0;
-	if (!(*str))
-	{
-		*line = ft_strdup("");
-		return (0);
-	}
-	while ((*str)[i] && (*str)[i] != '\n')
-		i++;
-	if (!(*line = ft_strsub(*str, 0, i)))
+	tmp = NULL;
+	if (x == -1)
+		x = ft_strlen(tab[fd]);
+	if (!(*line = ft_strsub(tab[fd], 0, x)))
 		return (-1);
-	if (i == 0 && (*str)[i] != '\n')
-		return (0);
-	if ((*str)[i] == '\n')
-	{
-		tmp = ft_strdup(*str + i + 1);
-		ft_strdel(str);
-		*str = tmp;
-	}
-	else if (!(*str)[i] && ret == 0)
-		ft_strdel(str);
+	tmp = tab[fd];
+	if (!(tab[fd] = ft_strsub(tab[fd], x + 1, ft_strlen(tab[fd]) - x)))
+		return (-1);
+	free(tmp);
 	return (1);
 }
 
-static void		ft_fillstr(t_gnl *tab, int fd, char *str)
+int			get_next_line(const int fd, char **line)
 {
-	int i;
+	static char		*tab[10240];
+	char			buffer[BUFF_SIZE + 1];
+	char			*tmp;
+	int				x;
 
-	i = 0;
-	while (tab[i].fd != -2)
-	{
-		if (tab[i].fd == fd)
-		{
-			tab[i].str = str;
-			break ;
-		}
-		i++;
-	}
-}
-
-int				get_next_line(int fd, char **line)
-{
-	static t_gnl	tab[FDMAX];
-	char			buf[BUFF_SIZE + 1];
-	int				ret;
-	int				i;
-	char			*str;
-
-	i = 0;
-	if (fd < 0 || !line || read(fd, buf, 0) < 0)
+	x = 0;
+	tmp = NULL;
+	if (fd < 0 || fd >= 10240 || !line ||
+			BUFF_SIZE < 1 || read(fd, buffer, 0) < 0 ||
+			(!tab[fd] && !(tab[fd] = ft_strnew(0))))
 		return (-1);
-	if (tab[0].str == NULL)
-		while (i < FDMAX)
-			tab[i++].fd = -2;
-	str = get_fd(fd, tab);
-	while ((ret = read(fd, buf, BUFF_SIZE)))
+	while ((ft_index(tab[fd], '\n') == -1)
+			&& (x = read(fd, buffer, BUFF_SIZE)) > 0)
 	{
-		buf[ret] = '\0';
-		if ((str = strjoinfree(&str, buf)) == NULL || ret == -1)
-			return (-1);
-		if (ft_strchr(str, '\n') != NULL)
-			break ;
+		buffer[x] = '\0';
+		tmp = tab[fd];
+		tab[fd] = ft_strjoin(tab[fd], buffer);
+		free(tmp);
 	}
-	ret = ft_ret(&str, ret, line);
-	ft_fillstr(tab, fd, str);
-	return (ret);
+	if (x <= 0 && !ft_strlen(tab[fd]))
+	{
+		ft_strdel(&tab[fd]);
+		return (0);
+	}
+	return (cut_line(line, tab, fd, ft_index(tab[fd], '\n')));
 }

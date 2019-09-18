@@ -6,12 +6,12 @@
 /*   By: cgarrot <marvin@le-101.fr>                 +:+   +:    +:    +:+     */
 /*                                                 #+#   #+    #+    #+#      */
 /*   Created: 2019/06/19 21:15:54 by cgarrot      #+#   ##    ##    #+#       */
-/*   Updated: 2019/09/12 23:51:57 by cgarrot     ###    #+. /#+    ###.fr     */
+/*   Updated: 2019/09/17 16:43:29 by cgarrot     ###    #+. /#+    ###.fr     */
 /*                                                         /                  */
 /*                                                        /                   */
 /* ************************************************************************** */
 
-#include "filler.h"
+#include "../include/filler.h"
 
 int		ft_atoi_2(char *str, t_parse_info *inf)
 {
@@ -19,9 +19,13 @@ int		ft_atoi_2(char *str, t_parse_info *inf)
 
 	nbr = 0;
 	while (str[inf->tmp] != '9' && str[inf->tmp] != '1' && str[inf->tmp] != '2'
-			&& str[inf->tmp] != '3' && str[inf->tmp] != '4' && str[inf->tmp] != '5'
-			&& str[inf->tmp] != '6' && str[inf->tmp] != '7' && str[inf->tmp] != '8')
+		&& str[inf->tmp] != '3' && str[inf->tmp] != '4' && str[inf->tmp] != '5'
+		&& str[inf->tmp] != '6' && str[inf->tmp] != '7' && str[inf->tmp] != '8')
+	{
+		if (str[inf->tmp + 1] == '\0')
+			break ;
 		inf->tmp++;
+	}
 	while (str[inf->tmp] >= '0' && str[inf->tmp] <= '9')
 		nbr = nbr * 10 + str[inf->tmp++] - '0';
 	return (nbr);
@@ -34,12 +38,13 @@ int		count_caract(char *str, char c)
 
 	i = 0;
 	j = 0;
-	while (str[i])
-	{
-		if (str[i] == c)
-			j++;
-		i++;
-	}
+	if (str)
+		while (str[i])
+		{
+			if (str[i] == c)
+				j++;
+			i++;
+		}
 	return (j);
 }
 

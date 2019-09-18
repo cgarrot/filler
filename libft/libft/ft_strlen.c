@@ -6,7 +6,7 @@
 /*   By: cgarrot <marvin@le-101.fr>                 +:+   +:    +:    +:+     */
 /*                                                 #+#   #+    #+    #+#      */
 /*   Created: 2018/10/06 05:15:22 by cgarrot      #+#   ##    ##    #+#       */
-/*   Updated: 2018/10/06 05:24:18 by cgarrot     ###    #+. /#+    ###.fr     */
+/*   Updated: 2019/09/16 19:18:26 by cgarrot     ###    #+. /#+    ###.fr     */
 /*                                                         /                  */
 /*                                                        /                   */
 /* ************************************************************************** */
@@ -18,7 +18,8 @@ size_t		ft_strlen(const char *str)
 	int i;
 
 	i = 0;
-	while (str[i])
-		i++;
+	if (str)
+		while (str[i])
+			i++;
 	return (i);
 }

@@ -6,7 +6,7 @@
 #    By: cgarrot <marvin@le-101.fr>                 +:+   +:    +:    +:+      #
 #                                                  #+#   #+    #+    #+#       #
 #    Created: 2018/10/10 19:59:22 by cgarrot      #+#   ##    ##    #+#        #
-#    Updated: 2019/09/13 00:00:52 by cgarrot     ###    #+. /#+    ###.fr      #
+#    Updated: 2019/09/17 17:10:12 by cgarrot     ###    #+. /#+    ###.fr      #
 #                                                          /                   #
 #                                                         /                    #
 # **************************************************************************** #
@@ -15,13 +15,17 @@
 
 NAME = cgarrot.filler
 CC = gcc
-FLAGS = -Wall -Wextra -Werror
-INC = /includes/filler.h
-HEADER = include
+FLAGS = -Wall -Wextra -Werror -g
+INC = /include/filler.h
+HEADER = -I./include
 
 #------------------------------------FILE--------------------------------------#
 
-FILES = 
+FILES = src/filler\
+		src/init_free\
+		src/parse\
+		src/parse_inf_co\
+		src/utils\
 
 #----------------------------------COLOR---------------------------------------#
 
@@ -62,7 +66,7 @@ $(NAME): $(OBJ)
 	@printf $(RED)"       "
 	@printf $(W)"(@) (@)\n"
 	@printf $(RED)"  /                   | "
-	@printf $(PURPLE)"cgarrot           "
+	@printf $(PURPLE)"cgarrot            "
 	@printf $(RED)" |                |           "
 	@printf $(YELLOW)"\/"
 	@printf $(RED)"\     "
@@ -71,7 +75,7 @@ $(NAME): $(OBJ)
 	@printf $(YELLOW)"<>"
 	@printf $(RED)"      ________    |       "
 	@printf $(PURPLE)"filler"
-	@printf $(RED)"     |                |________      \     "
+	@printf $(RED)"        |                |________      \     "
 	@printf $(W)"(@)\n"
 	@printf $(RED)" |      /  "
 	@printf $(W)"______"
@@ -92,8 +96,7 @@ $(NAME): $(OBJ)
 	@printf $(RED)"|_/ \n"
 	@printf $(W)"          \_/__\_/                                            \_/__\_/ \n"
 	@make -C libft/
-	@ar rcs $(NAME) $(OBJ)
-	@ranlib $(NAME)
+	@$(CC) $(FLAGS) $(HEADER) $(SRC) ./libft/libftprintf.a -o $(NAME) 
 
 clean:
 	@echo "\033[1m|---------------------------------|\033[0m"

@@ -6,18 +6,19 @@
 /*   By: cgarrot <marvin@le-101.fr>                 +:+   +:    +:    +:+     */
 /*                                                 #+#   #+    #+    #+#      */
 /*   Created: 2019/09/12 23:53:03 by cgarrot      #+#   ##    ##    #+#       */
-/*   Updated: 2019/09/12 23:57:14 by cgarrot     ###    #+. /#+    ###.fr     */
+/*   Updated: 2019/09/17 16:43:12 by cgarrot     ###    #+. /#+    ###.fr     */
 /*                                                         /                  */
 /*                                                        /                   */
 /* ************************************************************************** */
 
-#include "filler.h"
+#include "../include/filler.h"
 
 void	init(t_parse_info *inf)
 {
 	inf->piece_hori = 1;
 	inf->piece_verti = 1;
 	inf->tmp = 0;
+	inf->i = 0;
 }
 
 void	init_calcul(t_parse_info *inf, t_count *c)
@@ -55,7 +56,7 @@ void	clear_tab(t_parse_info *inf)
 	free(inf->tab);
 }
 
-void	free_zob(t_parse_info *inf)
+void	free_str(t_parse_info *inf)
 {
 	if (inf->str)
 		ft_strdel(&inf->str);
